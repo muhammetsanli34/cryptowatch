@@ -1,14 +1,14 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from "@reduxjs/toolkit";
-import { fetchBinancePrices, BinanceTicker } from "./api";
+import { fetchAllBinancePrices, BinanceTicker } from "./api";
 
 export const binanceAdapter = createEntityAdapter<BinanceTicker>({
   selectId: (ticker) => ticker.id,
 });
 
-export const fetchBinancePricesThunk = createAsyncThunk(
-  "binance/fetchPrices",
+export const fetchAllBinancePricesThunk = createAsyncThunk(
+  "binance/fetchAllPrices",
   async () => {
-    return await fetchBinancePrices();
+    return await fetchAllBinancePrices();
   }
 );
 
@@ -18,21 +18,21 @@ const binanceSlice = createSlice({
   reducers: {
     updatePrice: (state, action) => {
       binanceAdapter.updateOne(state, {
-        id: action.payload.symbol, // Güncellenen ID "symbol" olmalı
+        id: action.payload.symbol,
         changes: { price: action.payload.price },
       });
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchBinancePricesThunk.pending, (state) => {
+      .addCase(fetchAllBinancePricesThunk.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(fetchBinancePricesThunk.fulfilled, (state, action) => {
+      .addCase(fetchAllBinancePricesThunk.fulfilled, (state, action) => {
         state.status = "idle";
         binanceAdapter.setAll(state, action.payload);
       })
-      .addCase(fetchBinancePricesThunk.rejected, (state) => {
+      .addCase(fetchAllBinancePricesThunk.rejected, (state) => {
         state.status = "failed";
       });
   },

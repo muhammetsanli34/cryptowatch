@@ -1,50 +1,32 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchBinancePricesThunk, updatePrice } from "@/store/modules/binance/slice";
+import { fetchAllBinancePricesThunk, updatePrice } from "@/store/modules/binance/slice";
 import { RootState, AppDispatch } from "@/store/store";
 import { createBinanceWebSocket } from "@/store/modules/binance/socket";
 import StoreProvider from "@/providers/StoreProvider";
-import { selectCryptoPrice } from "@/store/modules/binance/selectors";
+import CryptoList from "@/components/features/CryptoList";
 
 export default function Home() {
   return (
     <StoreProvider>
-      <CryptoPrices />
+      <Dashboard />
     </StoreProvider>
   );
 }
 
-function CryptoPrices() {
+function Dashboard() {
   const dispatch = useDispatch<AppDispatch>();
-  const btcPrice = useSelector((state: RootState) => selectCryptoPrice("BTCUSDT")(state));
-  const ethPrice = useSelector((state: RootState) => selectCryptoPrice("ETHUSDT")(state));
 
   useEffect(() => {
-    dispatch(fetchBinancePricesThunk());
-
-    const btcSocket = createBinanceWebSocket("btcusdt", (data) => {
-      dispatch(updatePrice({ symbol: data.symbol, price: data.price }));
-    });
-
-    const ethSocket = createBinanceWebSocket("ethusdt", (data) => {
-      dispatch(updatePrice({ symbol: data.symbol, price: data.price }));
-    });
-
-    return () => {
-      btcSocket.close();
-      ethSocket.close();
-    };
+    dispatch(fetchAllBinancePricesThunk());
   }, [dispatch]);
 
   return (
-    <div>
-      <h1>Live Crypto Prices</h1>
-      <ul>
-        <li>BTC/USDT: ${btcPrice?.toFixed(2) || "Loading..."}</li>
-        <li>ETH/USDT: ${ethPrice?.toFixed(2) || "Loading..."}</li>
-      </ul>
+    <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Live Crypto Prices</h1>
+      <CryptoList />
     </div>
   );
 }
